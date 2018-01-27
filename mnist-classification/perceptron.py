@@ -37,39 +37,69 @@ class Perceptron(object):
             np.array: perceptron output vector for data, shape(1, class_dim)
         '''
         return np.dot(data, self.weights)
- 
-    def train(self, input_data, input_labels, epochs):
+
+    def run_training(self, dataset, epochs):
+        '''TODO: set up algorithm for data collection
+        Wrapper that runs the training regime specified by the project
+
+        Args:
+            dataset (dict): Contains the necessary training/test data and labels
+                            i.e. {'train_data': (np.array), 'train_label': (np.array), ... }
+            epochs (int): number of times to update the weight matrix according to sequential PLA
+        Returns:
+            dict: data describing the performance of the perceptron
+
+            1. test data at epoch 0
+            2. train
+            3. test accuracy on both datas combined
+            4. after all training 
         '''
-        Runs training regime according to the gradient descent variation of the perceptron learning 
-        algorithm (PLA)
+        #for scoping issues w/ return :(
+        train_confusion_matrix, test_confusion_matrix = None, None
+        epoch_accuracy = dict()
+
+        #initial accuracy check with anthony?
+        for epoch in range(epochs):
+            train_confusion_matrix = self.train(dataset['train_data'], dataset['input_labels'])
+            test_confusion_matrix = self.test(dataset['test_data', dataset['test_labels']])
+
+            epoch_accuracy[epoch] = {
+                'training': np.trace(train_confusion_matrix) / np.sum(train_confusion_matrix),
+                'test': np.trace(test_confusion_matrix) / np.sum(test_confusion_matrix)
+            }
+
+            if epoch > 1 and epoch_accuracy[epoch] < epoch_accuracy[epoch - 1] + self.tolerance:
+                break
+
+        return {
+            'accuracy' : epoch_accuracy,
+            'confusion_matrix': test_confusion_matrix
+        }
+
+    def train(self, input_data, input_labels):
+        '''
+        Runs training regime according to sequential update PLA for one epoch
 
         Args:
             data (np.array): shape (N, input_dim)
             labels (np.array): shape (N, class_dim)
-            epochs (int): number of times to iterate over input_data
 
         Returns:
             dict: dictionary of the accuracy for each epoch, i.e. { epoch_num: %accuracy, ... }
+            np.array: confusion matrix for the training set of shape (class_dim, class_dim)
         '''
         input_data = self._add_bias(input_data)
-        epoch_accuracy = dict()
+        confusion_matrix = np.zeros((self.class_dim, self.class_dim))
 
-        for epoch in range(epochs):
-            confusion_matrix = np.zeros((self.class_dim, self.class_dim))
-            for n in range(input_data.shape[0]):
-                _input, _target = input_data[n].reshape(1, self.input_dim+1), input_labels[n].reshape(1, self.class_dim)
-                _output = self.predict(_input)
-                _prediction, _label = np.argmax(_output), np.argmax(_target)
-                confusion_matrix[_prediction][_label] += 1
-
-                #print('input:\n{}\noutput:\n{}\ntarget:\n{}'.format(_input, _output, _target))
-                if _prediction != _label:
-                    _activations = np.where(_output > 0, 1, 0)
-                    self.weights -= self.eta*np.dot(_input.T, _activations - _target)
-                #print('updated weights: {}\n\n\n'.format(self.weights))
-            epoch_accuracy[epoch] = np.trace(confusion_matrix) / np.sum(confusion_matrix)
-            print('finished epoch {} with %{}'.format(epoch, epoch_accuracy[epoch]))
-        return epoch_accuracy
+        for n in range(input_data.shape[0]):
+            _input, _target = input_data[n].reshape(1, self.input_dim+1), input_labels[n].reshape(1, self.class_dim)
+            _output = self.predict(_input)
+            _prediction, _label = np.argmax(_output), np.argmax(_target)
+            confusion_matrix[_prediction][_label] += 1
+            if _prediction != _label:
+                _activations = np.where(_output > 0, 1, 0)
+                self.weights -= self.eta*np.dot(_input.T, _activations - _target)
+        return confusion_matrix
 
     def test(self, test_data, test_labels):
         '''
@@ -85,35 +115,3 @@ class Perceptron(object):
             _prediction, _label = np.argmax(_output), np.argmax(_target)
             confusion_matrix[_prediction][_label] += 1
         return confusion_matrix
-
-    def _train(self, input_data, input_labels, epochs):
-        #this should be good now. just needs to be cleaned up
-        #assumes exclusivity of class label (i.e. only [0,0,0,...,1,...])
-        print('Weights size {} \n input_data size {}'.format(self.weights.shape, input_data.shape))
-        print('Weights {}'.format(self.weights))
-        input_data = self._add_bias(input_data)
-        for n in range(input_data.shape[0]):
-
-            x, t = input_data[n].reshape(1, self.input_dim+1), input_labels[n].reshape(1, self.class_dim)
-
-            print('input ({}) {} \nlabel ({}) {}'.format(x.shape, x, t, t.shape))
-
-            output = np.dot(x, self.weights)
-
-            print('x . W ({}) {}'.format(output.shape, output))
-
-            prediction, label = np.argmax(output), np.argmax(t)
-
-            print('prediction: {}, label: {}'.format(prediction, label))
-            
-            #only if this was an incorrect prediction, update weights
-            #if np.argmax(output) != np.argmax(t):
-            activations = np.where(output > 0, 1, 0)
-            print('activation ({}): {}, label ({}): {}'.format(activations.shape, activations, t.shape, t))
-            print('x.T dot t - activations {}\n'.format(np.dot(x.T, t - activations)))
-
-            # + x.T (dot) t - activations   || - x.T (dot) activations - t
-            self.weights += self.eta*np.dot(x.T, t - activations)
-            #print("x.T = {}, (t-output) = {}".format(x.shape, (t - output).shape))
-            print('updated weights: {}\n\n\n'.format(self.weights))
-        return

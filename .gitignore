@@ -1,5 +1,9 @@
 # data
 MNIST_data/
+notes.txt
+venv/
+venv2/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
