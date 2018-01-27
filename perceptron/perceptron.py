@@ -19,7 +19,8 @@ class Perceptron(object):
         self.accuracy = 0
         self.eta = eta
         self.bias = 1
-        self.tolerance = 0.01
+        #tolerance of 0.001 %
+        self.tolerance = 0.00001
 
     def _add_bias(self, input_data):
         '''
@@ -55,19 +56,19 @@ class Perceptron(object):
         #initial accuracy check with anthony?
         for epoch in range(epochs):
             train_confusion_matrix = self.train(dataset['train_data'], dataset['train_labels'])
-            test_confusion_matrix = self.test(dataset['test_data', dataset['test_labels']])
-
+            test_confusion_matrix = self.test(dataset['test_data'], dataset['test_labels'])
             epoch_accuracy[epoch] = {
-                'training': np.trace(train_confusion_matrix) / np.sum(train_confusion_matrix),
+                'train': np.trace(train_confusion_matrix) / np.sum(train_confusion_matrix),
                 'test': np.trace(test_confusion_matrix) / np.sum(test_confusion_matrix)
             }
 
-            if epoch > 1 and epoch_accuracy[epoch] < epoch_accuracy[epoch - 1] + self.tolerance:
+            if epoch > 1 and epoch_accuracy[epoch]['test'] < epoch_accuracy[epoch - 1]['test'] + self.tolerance:
+                print('tolerance threshold not met...')
                 break
-
+            print('finished epoch ', epoch)
         return {
             'accuracy' : epoch_accuracy,
-            'confusion_matrix': test_confusion_matrix
+            'confusion_matrix': test_confusion_matrix.tolist()
         }
 
     def train(self, input_data, input_labels):

@@ -2,7 +2,8 @@
 MNIST_data/
 notes.txt
 venv/
-venv2/
+save/
+mnist/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
