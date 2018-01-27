@@ -18,6 +18,7 @@ def test_perceptron():
     perceptron = Perceptron(3, 2, 0.01)
     perceptron.train(input_data, input_labels)
 
+'''
 def plot(epoch_accuracy):
     #garaunteed correspondence
     #https://docs.python.org/3/library/stdtypes.html#dictionary-view-objects
@@ -25,19 +26,21 @@ def plot(epoch_accuracy):
     plt.plot(epochs, accuracy)
     plt.axis([0, max(epochs), 0, 1])
     plt.show
+'''
 
 def main():
     epochs = 60
     etas = [0.1, 0.01, 0.001]
-    mnist_data = Dataset.load_mnist()
-    perceptron = Perceptron(mnist_data["train_data"].shape[0],
-                            mnist_data["train_data"].shape[0],
+    mnist_data = Dataset.load()
+    print('loaded data')
+    for key in mnist_data:
+        print('key {} as shape {}'.format(key, mnist_data[key].shape))
+    perceptron = Perceptron(mnist_data["train_data"].shape[1],
+                            mnist_data["train_labels"].shape[1],
                             0.001)
     perceptron = Perceptron(784, 10, 0.001)
     print('training')
-    results = perceptron.train(mnist_data["train_data"][:50], mnist_data["train_labels"][:50])
-    #plot(epoch_accuracy)
-    #test_confusion_matrix = perceptron.test(mnist_data["test_data"], mnist_data["test_labels"])
+    results = perceptron.run_training(mnist_data, 1)
 
     for epoch in results['accuracy']:
         print('Epoch {}: %{}'.format(epoch, results[epoch]))

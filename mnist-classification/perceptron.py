@@ -48,19 +48,13 @@ class Perceptron(object):
             epochs (int): number of times to update the weight matrix according to sequential PLA
         Returns:
             dict: data describing the performance of the perceptron
-
-            1. test data at epoch 0
-            2. train
-            3. test accuracy on both datas combined
-            4. after all training 
         '''
         #for scoping issues w/ return :(
         train_confusion_matrix, test_confusion_matrix = None, None
         epoch_accuracy = dict()
-
         #initial accuracy check with anthony?
         for epoch in range(epochs):
-            train_confusion_matrix = self.train(dataset['train_data'], dataset['input_labels'])
+            train_confusion_matrix = self.train(dataset['train_data'], dataset['train_labels'])
             test_confusion_matrix = self.test(dataset['test_data', dataset['test_labels']])
 
             epoch_accuracy[epoch] = {
