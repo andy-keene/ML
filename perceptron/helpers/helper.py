@@ -52,6 +52,6 @@ def save_data(directory, file_name, results):
     plt.xlabel('epoch')    
     plt.ylabel('accuracy')
     plt.legend(['training data', 'test data'], loc='upper left')
-    #plt.ylim(0, 1)
+    plt.ylim(min(train_accuracy + test_accuracy) - 0.1, max(train_accuracy + test_accuracy) + 0.1)
     plt.savefig(file_name + '.png', bbox_inches='tight')
     plt.clf()
