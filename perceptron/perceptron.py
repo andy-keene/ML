@@ -5,12 +5,13 @@ class Perceptron(object):
     Implements a simple Perceptron network using sequential training
     '''
 
-    def __init__(self, input_size, class_size, eta):
+    def __init__(self, input_size, class_size, eta, tolerance=None):
         '''
         Args:
-            eta (int): learning rate
             input_size (int): length of input, assumes shape = (input_size, )
             class_size (int): number of classes
+            eta (float): learning rate
+            tolerance (float): percentage the testing accuracy must improve between epochs (i.e. 0.01 = 1%) 
         '''
         self.input_dim = input_size
         self.class_dim = class_size
@@ -19,8 +20,17 @@ class Perceptron(object):
         self.accuracy = 0
         self.eta = eta
         self.bias = 1
-        #tolerance of 0.001 %
-        self.tolerance = 0.00001
+        self.tolerance = tolerance
+
+    def _tolerance_met(self, previous_accuracy, curr_accuracy):
+        '''
+        Args: 
+            previous_accuracy (float): accuracy of the previous epoch
+            current_accuracy (float): accuracy of the current epoch
+        Returns:
+            bool: Whether the accuracy has increased by the required ammount
+        '''
+        return (previous_accuracy + self.tolerance < curr_accuracy)
 
     def _add_bias(self, input_data):
         '''
@@ -53,17 +63,23 @@ class Perceptron(object):
         #for scoping issues w/ return :(
         train_confusion_matrix, test_confusion_matrix = None, None
         epoch_accuracy = dict()
+        
         #initial accuracy check with anthony?
-        for epoch in range(epochs):
+        train_confusion_matrix = self.test(dataset['train_data'], dataset['train_labels'])
+        test_confusion_matrix = self.test(dataset['test_data'], dataset['test_labels'])
+        epoch_accuracy[0] = {
+                'train': np.trace(train_confusion_matrix) / np.sum(train_confusion_matrix),
+                'test': np.trace(test_confusion_matrix) / np.sum(test_confusion_matrix)
+        }
+        for epoch in range(1, epochs):
             train_confusion_matrix = self.train(dataset['train_data'], dataset['train_labels'])
             test_confusion_matrix = self.test(dataset['test_data'], dataset['test_labels'])
             epoch_accuracy[epoch] = {
                 'train': np.trace(train_confusion_matrix) / np.sum(train_confusion_matrix),
                 'test': np.trace(test_confusion_matrix) / np.sum(test_confusion_matrix)
             }
-
-            if epoch > 1 and epoch_accuracy[epoch]['test'] < epoch_accuracy[epoch - 1]['test'] + self.tolerance:
-                print('tolerance threshold not met...')
+            if self.tolerance and not self._tolerance_met(epoch_accuracy[epoch-1]['test'], epoch_accuracy[epoch]['test']):
+                print('tolerance not met')
                 break
             print('finished epoch ', epoch)
         return {
