@@ -63,9 +63,7 @@ class Perceptron(object):
             }
 
             if epoch > 1 and epoch_accuracy[epoch]['test'] < epoch_accuracy[epoch - 1]['test'] + self.tolerance:
-                print('tolerance threshold not met...')
                 break
-            print('finished epoch ', epoch)
         return {
             'accuracy' : epoch_accuracy,
             'confusion_matrix': test_confusion_matrix.tolist()
