@@ -4,7 +4,18 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from tabulate import tabulate
-    
+
+def rescale_one_hots(keys, dataset):
+    '''
+    Rescales data in the dataset from 1 to 0.9 and 0 to 0.1
+    Args:
+        keys (dict): data elements to apply rescaling to
+        dataset (dict): where dataset[keys] (np.array)
+    '''
+    for key in keys:
+        dataset[key] = np.where(dataset[key] > 0, 0.9, 0.1)
+    return dataset
+
 def print_matrix_as_table(file_name):
     '''
     Prints the confusion matrix of a json obj as a pretty table
