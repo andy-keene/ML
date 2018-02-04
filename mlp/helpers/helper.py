@@ -29,8 +29,11 @@ def print_matrix_as_table(file_name):
 
     with open(file_name, 'r') as f:
         file_json = json.load(f)
-    pretty_table = tabulate(np.array(file_json['confusion_matrix']), headers, tablefmt="grid")
+    confusion_matrix = np.array(file_json['confusion_matrix'])
+    pretty_table = tabulate(confusion_matrix, headers, tablefmt="grid")
+    confusion_matrix = np.array(file_json['confusion_matrix'])
     print(pretty_table)
+    print('Final accuracy: ', np.trace(confusion_matrix) / np.sum(confusion_matrix))
 
 def check_data_size(dataset):
     '''prints size of each value in the dataset'''

@@ -4,7 +4,7 @@ class MLP(object):
     '''
     Multi-Layer Perceptron using minibatch variant of stochastic gradient descent
     '''
-    def __init__(self, input_dim, output_dim, hidden_dim=100, batch_size=1000, eta=0.01, momentum=0.9, beta=1):
+    def __init__(self, input_dim, output_dim, hidden_dim=100, batch_size=1000, eta=0.1, momentum=0.9, beta=1):
         '''
         Args:
             inputs (int): number of input nodes
@@ -17,6 +17,7 @@ class MLP(object):
         '''
         self.input_dim = input_dim
         self.class_dim = output_dim
+        #refactor into Layer() objs?
         self.l1 = np.random.uniform(low=-0.5, high=0.5, size=(input_dim + 1, hidden_dim))
         self.l2 = np.random.uniform(low=-0.5, high=0.5, size=(hidden_dim + 1, output_dim))
         self.batch_size = batch_size
@@ -69,12 +70,12 @@ class MLP(object):
 
         for _inputs, _targets in self.minibatch(inputs, labels):
             _hidden_activations, _output_activations = self.run_forward(_inputs)
-            #if t - o changes, so does the sign!
             _output_delta = _output_activations * (1 - _output_activations) * (_targets - _output_activations)
             _hidden_delta = _hidden_activations * (1 - _hidden_activations) * (np.dot(_output_delta, self.l2.T))
             #note: must trim first col of _hidden_delta as it corresponds to hidden bias!
             _l1_update = (self.eta / self.batch_size) * np.dot(_inputs.T, _hidden_delta[:,1:]) + self.momentum*_l1_update
             _l2_update = (self.eta / self.batch_size) * np.dot(_hidden_activations.T, _output_delta) + self.momentum*_l2_update
+            #if t - o changes in __output_delta, so does the +=, -= sign!
             self.l1 += _l1_update
             self.l2 += _l2_update
 
@@ -82,7 +83,7 @@ class MLP(object):
         '''
         Tests the network
         Args:
-            inputs (np.array): of shape (N, m)
+            inputs (np.array): of shape (N, self.input_dim)
             labels (np.array): of shape (N, self.class_dim)
         Returns:
             (np.array): a confusion matrix for the test data of shape(class_dim, class_dim)
@@ -124,9 +125,7 @@ class MLP(object):
     def minibatch(self, inputs, targets):
         '''
         Shuffles the input and generates minibatch on the fly
-        Args:
-            inputs (np.array): 
-            targets (np.array): 
+        Args: ...
         Returns:
             tuple: ordered elements upon __next__() call of
                 np.array: next input batch of size (self.batch_size, inputs.shape[0])
@@ -144,7 +143,7 @@ class MLP(object):
         '''
         Returns a confusion matrix for each prediction / label pair
         Args:
-            predictions (np.array): of shape (N, x)
+            predictions (np.array): of shape (N, self.input_dim)
             labels (np.array): of shape (N, self.class_dim)
         Returns:
             np.array: confusion matrix of shape (self.class_dim, self.class_dim)
