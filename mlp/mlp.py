@@ -4,17 +4,16 @@ class MLP(object):
     '''
     Multi-Layer Perceptron using minibatch variant of stochastic gradient descent
     '''
-    def __init__(self, input_dim, hidden_dim, output_dim, batch_size=1000, eta=0.01, momentum=0.9, beta=1):
+    def __init__(self, input_dim, output_dim, hidden_dim=100, batch_size=1000, eta=0.01, momentum=0.9, beta=1):
         '''
-        TODO: Fix docs to naming conv.
         Args:
             inputs (int): number of input nodes
-            hiddens (int): number of hidden layer nodes
             outputs (int): number of output nodes
-            batch_size (int): size of batches for training
-            eta (int): learning rate
-            momentum (int): multiplicative dependency of previous gradient
-            beta (int): constant B of sigmoid activation function 1 / (1 + exp(-Bx))
+            hiddens (int): number of hidden layer nodes [default 100]
+            batch_size (int): size of batches for training [default 1000]
+            eta (int): learning rate [default 0.01]
+            momentum (int): multiplicative dependency of previous gradient [default 0.9]
+            beta (int): constant B of sigmoid activation function 1 / (1 + exp(-Bx)) [default 1]
         '''
         self.input_dim = input_dim
         self.class_dim = output_dim
@@ -59,21 +58,21 @@ class MLP(object):
 
     def train(self, inputs, labels):
         '''
-        TODO: Add documentation
+        Runs back propigation with stochastic gradient descent during training over one epoch
+        Args: ...
+        Returns:
+            np.array: a confusion matrix of shape (self.class_dim, self.class_dim)
         '''
         inputs = self._add_bias(inputs)
         _l1_update = np.zeros(self.l1.shape)
         _l2_update = np.zeros(self.l2.shape)
 
         for _inputs, _targets in self.minibatch(inputs, labels):
-
             _hidden_activations, _output_activations = self.run_forward(_inputs)
-
             #if t - o changes, so does the sign!
             _output_delta = _output_activations * (1 - _output_activations) * (_targets - _output_activations)
             _hidden_delta = _hidden_activations * (1 - _hidden_activations) * (np.dot(_output_delta, self.l2.T))
-
-            #note: must trim first col of _hidden_delta as it corresponds to hidden bias! Also will be 0 col. since (1-bias)*bias=0 for bias=1 
+            #note: must trim first col of _hidden_delta as it corresponds to hidden bias!
             _l1_update = (self.eta / self.batch_size) * np.dot(_inputs.T, _hidden_delta[:,1:]) + self.momentum*_l1_update
             _l2_update = (self.eta / self.batch_size) * np.dot(_hidden_activations.T, _output_delta) + self.momentum*_l2_update
             self.l1 += _l1_update
@@ -102,13 +101,8 @@ class MLP(object):
                 (np.array): hidden activations of shape (N, self.hidden_dim + 1), i.e. with bias 
                 (np.array): output activations of shape (N, self.output_dim)
         '''
-        #print(self.l1, '\n', self.l2)
-        #_inputs = self._add_bias(inputs)
-        #print('inputs with bais \n', _inputs)
         _hidden_activations = self._add_bias(self._activate(np.dot(inputs, self.l1)))
-        #print('hidden activations \n', _hidden_activations)
         _output_activations = self._activate(np.dot(_hidden_activations, self.l2))
-        #print('output activations \n', _output_activations)
         return _hidden_activations, _output_activations
 
     def _add_bias(self, inputs):
@@ -121,9 +115,7 @@ class MLP(object):
 
     def _activate(self, layer):
         '''
-        Applies the sigmoid activation function to the given matrix
-        Args:
-            layer (np.array): output Matrix to be activated
+        Applies the sigmoid activation function to the given layer/matrix
         Returns:
             np.array: A sigmoid activation for each element in layer 
         '''
@@ -131,7 +123,7 @@ class MLP(object):
 
     def minibatch(self, inputs, targets):
         '''
-        Generates minibatch on the fly
+        Shuffles the input and generates minibatch on the fly
         Args:
             inputs (np.array): 
             targets (np.array): 
@@ -140,6 +132,9 @@ class MLP(object):
                 np.array: next input batch of size (self.batch_size, inputs.shape[0])
                 np.array: corresponding target batch of size (self.batch_size, targets.shape[0])                
         '''
+        shuffled_indices = list(range(inputs.shape[0]))
+        np.random.shuffle(shuffled_indices)
+        inputs, targets = inputs[shuffled_indices,:], targets[shuffled_indices,:]
         start = 0
         while start < inputs.shape[0]:
             yield inputs[start:start + self.batch_size,:], targets[start:start+self.batch_size,:]
