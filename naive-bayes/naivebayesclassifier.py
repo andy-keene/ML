@@ -76,5 +76,6 @@ class NaiveBayesClassifier(object):
         '''
         u = ((x - mu)**2 / (2*(sigma)**2))
         result = (np.exp(-u)) / (np.sqrt(2*np.pi) * sigma)
-        #check if 0
-        return result if result != 0.0 else np.nextafter(0, 1)#1e-80
+        #check if 0, returning smallest value proportional to (u)
+        #note, must multiply np.nextafter by n > 1!
+        return result if result != 0.0 else np.nextafter(0, 1)*(1+np.sqrt(u))
