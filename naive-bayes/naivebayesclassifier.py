@@ -47,7 +47,7 @@ class NaiveBayesClassifier(object):
 
             #get the predicted label
             predicted = max(posteriors.items(), key=lambda n: n[1])[0]
-            confusion_matrix[predicted][label] += 1
+            confusion_matrix[label][predicted] += 1
         return confusion_matrix
 
     def _get_posterior(self, features, class_values):
