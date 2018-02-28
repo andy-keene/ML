@@ -75,8 +75,6 @@ class NaiveBayesClassifier(object):
             float: P(x | class)
         '''
         u = ((x - mu)**2 / (2*(sigma)**2))
-        result = np.exp(-u) / (np.sqrt(2*np.pi) * sigma)
-        if result <=0:
-            pass
+        result = (np.exp(-u)) / (np.sqrt(2*np.pi) * sigma)
         #check if 0
-        return result if result != 0 else 0.00000000000001
+        return result if result != 0.0 else np.nextafter(0, 1)#1e-80
