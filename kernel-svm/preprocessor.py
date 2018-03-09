@@ -12,7 +12,7 @@ class Preprocessor(object):
             'Embarked': self._embarked,
             'Ticket': self._zero,
             'Cabin': self._zero
-            #ticket and cabin do not have preprocesing funcs
+            # ticket and cabin do not have preprocesing funcs
         }
         self.dataset_df = pd.read_csv(filename)
         self.processed_df = self._preprocess(self.dataset_df)
@@ -24,9 +24,6 @@ class Preprocessor(object):
         Returns:
             np.array: preprocessed data where np.array[:,n] == col[n]
         '''
-        #_data = self.dataset_df[cols].as_matrix()
-        #_data = np.nan_to_num(_data)
-        #return _data
         return np.nan_to_num(self.processed_df[cols].as_matrix())
 
     def get_dataframe(self):
