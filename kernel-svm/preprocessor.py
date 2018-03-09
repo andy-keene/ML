@@ -7,11 +7,11 @@ class Preprocessor(object):
 
     def __init__(self, filename):
         self.preprocessing_map = {
-            'Name': self._name,
-            'Sex': self._sex,
-            'Embarked': self._embarked,
-            'Ticket': self._zero,
-            'Cabin': self._zero
+            'Name': Preprocessor.name,
+            'Sex': Preprocessor.sex,
+            'Embarked': Preprocessor.embarked,
+            'Ticket': Preprocessor.ticket,
+            'Cabin': Preprocessor.zero
             # ticket and cabin do not have preprocesing funcs
         }
         self.dataset_df = pd.read_csv(filename)
@@ -24,6 +24,7 @@ class Preprocessor(object):
         Returns:
             np.array: preprocessed data where np.array[:,n] == col[n]
         '''
+
         return np.nan_to_num(self.processed_df[cols].as_matrix())
 
     def get_dataframe(self):
@@ -45,10 +46,9 @@ class Preprocessor(object):
             _processed_df[field] = _processed_df[field].apply(self.preprocessing_map[field])
         return _processed_df
 
-    # preprocessing functions
-    # TODO: move instance methods -> external | static ?...
-    def _sex(self, sex):
-        ''' passanger.sex -> (int)'''
+    # preprocessing functions (as class funcs meh...)
+    def sex(sex):
+        '''passenger.sex -> (int)'''
         if sex == 'female':
             return 1
         elif sex == 'male':
@@ -56,8 +56,8 @@ class Preprocessor(object):
         else:
             return -1
 
-    def _embarked(self, embarked):
-        ''' passanger.embarked -> (int)'''         
+    def embarked(embarked):
+        '''passenger.embarked -> (int)'''
         if embarked == 'S':
             return 0
         elif embarked == 'Q':
@@ -67,8 +67,8 @@ class Preprocessor(object):
         else:
             return 3
     
-    def _name(self, name):
-        ''' passanger.name -> (int)'''                 
+    def name(name):
+        '''passenger.name -> (int)'''              
         if 'Sir.' in name:
             return 5
         elif 'Dr.' in name:
@@ -81,6 +81,14 @@ class Preprocessor(object):
             return 1
         else:
             return 0
-    
-    def _zero(self, item):
+
+    def ticket(ticket):
+        '''passenger.ticket -> (int)'''        
+        try:
+            return int(ticket)
+        except:
+            return 0
+
+    def zero(item):
+        '''item -> 0 used for unknown fields'''
         return 0

@@ -24,11 +24,11 @@ columns = [
     'Survived'
 ]
 
-data_preprocessor = Preprocessor(train_file)
-processed_data = data_preprocessor.processed_df
-print(processed_data)
+preprocessor = Preprocessor(train_file)
 
-data = data_preprocessor.get_matrix(['Pclass', 'Fare', 'Survived'])
+data = preprocessor.get_matrix(['PassengerId', 'Sex', 'Ticket', 'Pclass', 'Fare', 'Survived'])
+print(data[:10,:])
+exit()
 
 
 TEST_SIZE = 800
