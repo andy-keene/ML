@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import sklearn as sk
 pd.options.mode.chained_assignment = None
 
 class Preprocessor(object):
@@ -16,6 +17,7 @@ class Preprocessor(object):
         }
         self.dataset_df = pd.read_csv(filename)
         self.processed_df = self._preprocess(self.dataset_df)
+        self.standardize = standardize
 
     def get_matrix(self, cols):
         '''
@@ -24,8 +26,23 @@ class Preprocessor(object):
         Returns:
             np.array: preprocessed data where np.array[:,n] == col[n]
         '''
-
         return np.nan_to_num(self.processed_df[cols].as_matrix())
+    
+    def get_matrix_scaled(self, cols, range=(0,1)):
+        '''
+        Args:
+            cols (list): list of dataframe columns to retrieve
+            range (tuple): range to scale features to
+        Returns:
+            np.array: preprocessed data where np.array[:,n] == col[n] and
+                      the data in col[n] is scaled to the given range
+        '''
+        # can also use l-1, l-2 normalization, standarization, etc.
+        return sk.preprocessing.minmax_scale(self.get_matrix(cols),
+            feature_range=(0,1),
+            axis=0,
+            copy=False
+        )
 
     def get_dataframe(self):
         '''
