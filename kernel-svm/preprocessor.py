@@ -17,7 +17,6 @@ class Preprocessor(object):
         }
         self.dataset_df = pd.read_csv(filename)
         self.processed_df = self._preprocess(self.dataset_df)
-        self.standardize = standardize
 
     def get_matrix(self, cols):
         '''
