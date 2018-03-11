@@ -63,12 +63,4 @@ def plot_svm(svm, title, x_axis_title, y_axis_title, data, labels):
     sub.set_title(title)
     #save fig and clear
     plt.savefig(title, bbox_inches='tight')
-    print('saved graph')
     plt.clf()
-
-'''
-C=3
-clf = svm.SVC(kernel='rbf', gamma=0.7, C=C)
-clf.fit(X, y)
-title = 'linear'
-'''
