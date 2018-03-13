@@ -1,110 +1,97 @@
 import json
+import time
+import os
 import pandas as pd
 import numpy as np
 from sklearn import datasets
 from sklearn.svm import SVC
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_score, GridSearchCV
 from preprocessor import Preprocessor
 from graph import plot_svm
 
-train_file = './data/titanic_train.csv'
-test_file = './data/titanic_test.csv'
-full_file = './data/titanic_full.csv'
+def save_data(directory, file_name, results, file_type='.json'):
+    '''
+    Saves performance data to:
+        directory/file_name: raw data
+        results (dict | pd.dataframe):
+        file_type (string): .json or .csv
+    '''
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    
+    if file_type == '.json':
+        with open(file_name + file_type, 'w') as f:
+            json.dump(results, f)
+    elif file_type == '.csv':
+        results.to_csv(file_name)
 
-columns = [
-    'PassengerId',
-    'Pclass',
-    'Name',
-    'Sex',
-    'Age',
-    'SibSp',
-    'Parch',
-    'Ticket',
-    'Fare',
-    'Cabin',
-    'Embarked',
-    'Survived'
-]
-column_options = [
-    'Pclass',
-    'Name',
-    'Sex',
-    'Age',
-    'SibSp',
-    'Parch',
-    'Ticket',
-    'Fare',
-    'Cabin',
-    'Embarked'
-]
-feature_combinations = [
-    ['Pclass', 'Name', 'Sex'],
-    ['Pclass', 'Name', 'Sex', 'SibSp', 'Fare'],
-    ['Sex', 'SibSp', 'Parch', 'Fare'],    
-]
-kernel_types = ['rbf', 'linear', 'poly']
-hyperparams = [
-    (0.2, 1),
-    (3, 3),
-    (8, 5),
-    (15, 5),
-]
-k_folds = 8
-cache_size = 7000
-preprocessor = Preprocessor(train_file)
-model_runs = {}
-trial = 0
+def main():
+    #files
+    directory = './save/{}'.format(time.ctime().replace(' ', '-'))
+    model_file = directory + '/model-set-{}'
+    results_file = directory + '/results-set-{}'
+    train_file = './data/titanic_train.csv'
 
-#kernel/model selection
-for features in feature_combinations:
-    #feature selection
-    for kernel in kernel_types:
-        #param testing
-        for c, degree in hyperparams:
-            dataset = preprocessor.get_matrix(features + ['Survived'])
-            data, labels = dataset[:,:-1], dataset[:,-1]
-            svm = SVC(kernel=kernel, C=c, cache_size=cache_size)
-            scores = cross_val_score(svm, data, labels, cv=k_folds)
-            model_runs[trial] = {
-                'kernel': kernel,
-                'features': features,
-                'C': c,
-                'Degree': degree,
-                'Scores': list(scores),
-                'std': float(scores.std()),
-                'mean': float(scores.mean())
-            }
-            print('tested {}'.format(model_runs[trial]))
-            trial += 1
+    # set grid search for hyper params
+    cv_size = 4
+    cache_size = 4000
+    max_iterations = 100000
+    feature_set = [
+        ['Pclass', 'Sex', 'Age', 'Fare'],
+        ['Name', 'Sex', 'SibSp', 'Fare'],
+        ['Pclass', 'Age', 'SibSp', 'Parch', 'Fare'],
+        ['Age', 'Sex'],
+        ['Pclass', 'Fare'],
+        ['Age', 'Fare'],
+        ['Sex', 'Fare'],
+        ['Pclass', 'Sex']
+    ]
+    parameters = {
+        'kernel': [
+            'rbf',
+            'linear',
+            'poly'
+        ],
+        'C': [
+            0.1,
+            1,
+            10
+        ],
+        'gamma': [
+            1,
+            3,
+            5
+        ],
+        'degree': [
+            1,
+            3,
+            5
+        ]
+    }
+    preprocessor = Preprocessor(train_file)
 
-#save
-print('saving data')
-with open('./model-runs.json', 'w') as f:
-    json.dump(model_runs, f)
-
-
-
+    for set_num, features in enumerate(feature_set):
+        dataset = preprocessor.get_matrix(features + ['Survived'])
+        data, labels = dataset[:,:-1], dataset[:,-1]
+        svc = SVC(cache_size=cache_size, max_iter=max_iterations)
+        clf = GridSearchCV(svc, param_grid=parameters, cv=cv_size, return_train_score=True)
+        results = clf.fit(data, labels)
         
+        #save results
+        top_model = clf.get_params()
+        top_model['training_feature_set'] = features
+        top_model['estimator'] = str(top_model['estimator'])
+        save_data(directory,
+            results_file.format(set_num),
+            pd.DataFrame(results.cv_results_),
+            file_type='.csv'
+        )
+        save_data(directory,
+            model_file.format(set_num),
+            top_model,
+            file_type='.json'
+        )
 
-'''
-#data = preprocessor.get_matrix(['PassengerId', 'Sex', 'Ticket', 'Pclass', 'Fare', 'Survived'])
-dataset = preprocessor.get_matrix(['Age', 'Fare', 'Survived'])
 
-data, labels = dataset[:,:-1], dataset[:,-1]
-
-print(data[:10,:])
-
-svm = SVC(kernel='rbf', C=15)
-scores = cross_val_score(svm, data, labels, cv=8)
-svm.fit(data, labels)
-print('Accuracy: {} +/- {}'.format(scores.mean(), scores.std()))
-plot_svm(svm, './yo', 'Pclass', 'Fare', data[:100], labels[:100])
-
-
-resp = svm.fit(train, train_labels)
-print(resp)
-predictions = svm.predict(test)
-print(predictions - test_labels)
-err = np.sum(abs(test_labels - predictions))
-print('err = ', err / test_labels.shape[0])
-'''
+if __name__ == '__main__':
+    main()

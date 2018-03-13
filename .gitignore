@@ -4,6 +4,7 @@ MNIST_data/
 notes.txt
 venv/
 save/
+results/
 mnist/
 
 # Byte-compiled / optimized / DLL files
