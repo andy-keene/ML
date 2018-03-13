@@ -23,19 +23,33 @@ def save_data(directory, file_name, results, file_type='.json'):
         with open(file_name + file_type, 'w') as f:
             json.dump(results, f)
     elif file_type == '.csv':
-        results.to_csv(file_name)
+        results.to_csv(file_name, index=False)
+
+def get_predictions(model, features, test_file, PCA=None):
+    '''
+    Returns:
+        pd.dataframe: predictions with cols ['PassengerId', 'Survived']
+    '''
+    preprocessor = Preprocessor(test_file)
+    dataset = preprocessor.get_matrix(features)
+    predictions = model.predict(dataset)
+
+    df = preprocessor.get_dataframe()
+    return pd.DataFrame(data={'PassengerId': df['PassengerId'], 'Survived': predictions.tolist()})
 
 def main():
     #files
     directory = './save/{}'.format(time.ctime().replace(' ', '-'))
     model_file = directory + '/model-set-{}'
     results_file = directory + '/results-set-{}'
+    predictions_file = directory + '/predictions-set-{}'
     train_file = './data/titanic_train.csv'
+    test_file = './data/titanic_test.csv'    
 
     # set grid search for hyper params
     cv_size = 4
-    cache_size = 4000
-    max_iterations = 100000
+    cache_size = 5000
+    max_iterations = 1000000
     feature_set = [
         ['Pclass', 'Sex', 'Age', 'Fare'],
         ['Name', 'Sex', 'SibSp', 'Fare'],
@@ -77,8 +91,17 @@ def main():
         clf = GridSearchCV(svc, param_grid=parameters, cv=cv_size, return_train_score=True)
         results = clf.fit(data, labels)
         
-        #save results
+        #test best model, and save predictions for submission
         top_model = clf.get_params()
+        top_svc = top_model['estimator']
+        top_svc.fit(data, labels)
+        save_data(directory,
+            predictions_file.format(set_num),
+            get_predictions(top_svc, features, test_file),
+            file_type='.csv'
+        )
+
+        #save results
         top_model['training_feature_set'] = features
         top_model['estimator'] = str(top_model['estimator'])
         save_data(directory,
@@ -91,6 +114,7 @@ def main():
             top_model,
             file_type='.json'
         )
+        
 
 
 if __name__ == '__main__':
