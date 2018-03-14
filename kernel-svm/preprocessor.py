@@ -17,6 +17,10 @@ class Preprocessor(object):
         }
         self.dataset_df = pd.read_csv(filename)
         self.processed_df = self._preprocess(self.dataset_df)
+        self.labels = None
+        if 'Survived' in self.dataset_df:
+            labels = self.get_matrix(['Survived'])
+            self.labels = labels.reshape((labels.shape[0], ))
 
     def get_matrix(self, cols):
         '''
@@ -37,11 +41,18 @@ class Preprocessor(object):
                       the data in col[n] is scaled to the given range
         '''
         # can also use l-1, l-2 normalization, standarization, etc.
-        return sk.preprocessing.minmax_scale(self.get_matrix(cols),
+        return sk.preprocessing.minmax_scale(self.get_matrix(cols).astype('float64'),
             feature_range=(0,1),
             axis=0,
             copy=False
         )
+
+    def get_labels(self):
+        '''
+        Returns:
+            np.array: 'Survived' labels of the file of shape (samples, )
+        '''
+        return self.labels
 
     def get_dataframe(self):
         '''
