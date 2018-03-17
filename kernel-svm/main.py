@@ -90,6 +90,7 @@ def main():
         
         #test best model, fit, and save predictions for submission
         top_model = clf.best_params_
+        top_model['cv_score'] = clf.best_score_
         top_svc = clf.best_estimator_
         save_data(directory,
             predictions_file.format(set_num),
