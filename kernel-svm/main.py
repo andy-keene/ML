@@ -47,12 +47,13 @@ def main():
     model_file = directory + '/model-set-{}'
     results_file = directory + '/results-set-{}'
     predictions_file = directory + '/predictions-set-{}'
+    graph_file = directory + '/{}.png'
     train_file = './data/titanic_train.csv'
     test_file = './data/titanic_test.csv'    
 
-    #data preprocessing
-    use_pca = True
-    pca_n_components = 4
+    #data preprocessing, set pca = None to turn off PCA
+    save_graph = True
+    pca_n_components = 2
     preprocessor = Preprocessor(train_file)
     pca = PCA(n_components=pca_n_components)
 
@@ -60,78 +61,65 @@ def main():
     cv_size = 4
     cache_size = 5000
     max_iterations = 1000000
-
     feature_set = [
+        ['Age', 'Sex'],
         ['Pclass', 'Sex', 'Age', 'Fare'],
         ['Name', 'Sex', 'SibSp', 'Fare'],
         ['Pclass', 'Age', 'Sex', 'SibSp', 'Parch', 'Fare'],
         ['PassengerId','Pclass','Name','Sex','Age','SibSp','Parch','Ticket','Fare','Cabin','Embarked'],
-        ['PassengerId','Pclass','Name','Sex','Age','SibSp','Parch','Ticket','Fare','Cabin'],
         ['PassengerId','Pclass','Name','Sex','Age','SibSp','Parch','Ticket','Fare'],        
+        ['PassengerId','Pclass','Name','Sex','Age','SibSp','Parch','Ticket','Fare','Cabin'],
     ]
-    original_feature_set = [
-        ['Pclass', 'Sex', 'Age', 'Fare'],
-        ['Name', 'Sex', 'SibSp', 'Fare'],
-        ['Pclass', 'Age', 'SibSp', 'Parch', 'Fare'],
-        ['Age', 'Sex'],
-        ['Pclass', 'Fare'],
-        ['Age', 'Fare'],
-        ['Sex', 'Fare'],
-        ['Pclass', 'Sex']
-    ]
+
+    
     parameters = {
-        'kernel': [
-        #    'rbf',
-            'linear',
-            'poly'
-        ],
-        'C': [
-            0.1,
-            0.8,
-            1,
-            10
-        ],
-        'gamma': [
-            1,
-            3,
-            4,
-            5,
-            7,
-            10
-        ],
-        'degree': [
-            1,
-            3,
-            4,
-            5
-        ]
+        'kernel': ['linear'],
+        'C': [1e-3, 0.1, 1.0, 5.0, 20.0, 50.0],
+        'gamma': [1e-4, 1e-2, 1.0, 5.0, 1.5e2, 2.0e2],
+        'degree': [1, 3, 5]
     }
 
     for set_num, features in enumerate(feature_set):
-        #dataset = preprocessor.get_matrix_scaled(features + ['Survived'])
-        #data, labels = dataset[:,:-1], dataset[:,-1]
         data, labels = preprocessor.get_matrix_scaled(features), preprocessor.get_labels()
 
-        if use_pca:
+        if pca:
             data = pca.fit_transform(data)
         
         svc = SVC(cache_size=cache_size, max_iter=max_iterations)
-        clf = GridSearchCV(svc, param_grid=parameters, cv=cv_size, return_train_score=True)
-        results = clf.fit(data, labels)
+        clf = GridSearchCV(svc, param_grid=parameters, cv=cv_size, refit=True, return_train_score=True)
+        results = clf.fit(data, y=labels)
         
-        #test best model, and save predictions for submission
-        top_model = clf.get_params()
-        top_svc = top_model['estimator']
-        top_svc.fit(data, labels)
+        #test best model, fit, and save predictions for submission
+        top_model = clf.best_params_
+        top_svc = clf.best_estimator_
         save_data(directory,
             predictions_file.format(set_num),
             get_predictions(top_svc, features, test_file, pca=pca),
             file_type='.csv'
         )
 
-        #save results
+        #graph / save training and testing predictions of top model
+        if save_graph:
+            x_axis_title, y_axis_title = 'x', 'y'
+            if pca != None and len(features) == 2:
+                x_axis_title, y_axis_title = features[0], features[1]
+            title = 'c={},gamma={},degree={},type={},feature-set={}'.format(
+                top_model.get('C', 'None'),
+                top_model.get('gamma', 'None'),
+                top_model.get('degree', 'None'),            
+                top_model.get('kernel', 'N/A'),
+                set_num
+            )
+            plot_svm(top_svc,
+                graph_file.format(title),
+                title, x_axis_title,
+                y_axis_title,
+                data,
+                labels
+            )
+
+        #save parameter search scores as table, and model details w/ feature set as JSON
         top_model['training_feature_set'] = features
-        top_model['estimator'] = str(top_model['estimator'])
         save_data(directory,
             results_file.format(set_num),
             pd.DataFrame(results.cv_results_),

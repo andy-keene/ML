@@ -42,7 +42,7 @@ def plot_contours(ax, clf, xx, yy, **params):
     return out
 
 
-def plot_svm(svm, title, x_axis_title, y_axis_title, data, labels):
+def plot_svm(svm, filename, title, x_axis_title, y_axis_title, data, labels):
     '''
     Saves kernel plot (linear, rbf, ...)
     Args:
@@ -69,5 +69,5 @@ def plot_svm(svm, title, x_axis_title, y_axis_title, data, labels):
     sub.set_yticks(())
     sub.set_title(title)
     #save fig and clear
-    plt.savefig(title, bbox_inches='tight')
+    plt.savefig(filename, bbox_inches='tight')
     plt.clf()
