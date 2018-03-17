@@ -75,7 +75,7 @@ def main():
         'kernel': ['linear'],
         'C': [1e-3, 0.1, 1.0, 5.0, 20.0, 50.0],
         'gamma': [1e-6, 1e-4, 1e-2, 1.0, 5.0, 1.5e2, 2.0e2],
-        'degree': [1, 3, 5]
+        'degree': [1, 3, 5, 9]
     }
 
     for set_num, features in enumerate(feature_set):
