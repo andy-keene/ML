@@ -59,23 +59,18 @@ def main():
 
     # grid search for hyper params
     # set if data not scaled: max_iterations = None
-    cv_size = 4
+    cv_size = 6
     cache_size = 5000
     feature_set = [
-        ['Pclass', 'Sex', 'Age', 'Fare'],
-        ['Name', 'Sex', 'SibSp', 'Fare'],
-        ['Pclass', 'Age', 'Sex', 'SibSp', 'Parch', 'Fare'],
         ['PassengerId','Pclass','Name','Sex','Age','SibSp','Parch','Ticket','Fare','Cabin','Embarked'],
-        ['PassengerId','Pclass','Name','Sex','Age','SibSp','Parch','Ticket','Fare'],        
-        ['PassengerId','Pclass','Name','Sex','Age','SibSp','Parch','Ticket','Fare','Cabin'],
     ]
 
     
     parameters = {
-        'kernel': ['linear'],
+        'kernel': ['poly'],
         'C': [1e-3, 0.1, 1.0, 5.0, 20.0, 50.0],
-        'gamma': [1e-6, 1e-4, 1e-2, 1.0, 5.0, 1.5e2, 2.0e2],
-        'degree': [1, 3, 5, 9]
+        'gamma': [1e-6, 1e-4, 1e-2, 1.0, 5.0, 1.5e2],
+        'degree': [1, 3, 6]
     }
 
     for set_num, features in enumerate(feature_set):
@@ -85,7 +80,7 @@ def main():
             data = pca.fit_transform(data)
         
         svc = SVC(cache_size=cache_size)
-        clf = GridSearchCV(svc, param_grid=parameters, cv=cv_size, refit=True, return_train_score=True)
+        clf = GridSearchCV(svc, param_grid=parameters, scoring="accuracy", cv=cv_size, refit=True, return_train_score=True)
         results = clf.fit(data, y=labels)
         
         #test best model, fit, and save predictions for submission
