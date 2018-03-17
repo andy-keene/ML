@@ -46,7 +46,14 @@ def plot_svm(svm, title, x_axis_title, y_axis_title, data, labels):
     '''
     Saves kernel plot (linear, rbf, ...)
     Args:
-        svm ()
+        svm (sklearn.svc): svm machine to plot decision boundary
+        title (string): title to display on graph / filename
+        x_axis_title (string): x axis title
+        y_axis_title (string): y axis title
+        data (np.array): data of shape (n, 2) where n is number of training samples
+        labels (np.array): labels of shape (n, ) for the given data
+    Returns:
+        None: saves plot of decision boundary to file
     '''
     sub = plt.gca()
     feature_1, feature_2 = data[:, 0], data[:, 1]
