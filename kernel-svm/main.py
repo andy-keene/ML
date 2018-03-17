@@ -57,12 +57,11 @@ def main():
     preprocessor = Preprocessor(train_file)
     pca = PCA(n_components=pca_n_components)
 
-    # set grid search for hyper params
+    # grid search for hyper params
+    # set if data not scaled: max_iterations = None
     cv_size = 4
     cache_size = 5000
-    max_iterations = 1000000
     feature_set = [
-        ['Age', 'Sex'],
         ['Pclass', 'Sex', 'Age', 'Fare'],
         ['Name', 'Sex', 'SibSp', 'Fare'],
         ['Pclass', 'Age', 'Sex', 'SibSp', 'Parch', 'Fare'],
@@ -75,7 +74,7 @@ def main():
     parameters = {
         'kernel': ['linear'],
         'C': [1e-3, 0.1, 1.0, 5.0, 20.0, 50.0],
-        'gamma': [1e-4, 1e-2, 1.0, 5.0, 1.5e2, 2.0e2],
+        'gamma': [1e-6, 1e-4, 1e-2, 1.0, 5.0, 1.5e2, 2.0e2],
         'degree': [1, 3, 5]
     }
 
@@ -85,7 +84,7 @@ def main():
         if pca:
             data = pca.fit_transform(data)
         
-        svc = SVC(cache_size=cache_size, max_iter=max_iterations)
+        svc = SVC(cache_size=cache_size)
         clf = GridSearchCV(svc, param_grid=parameters, cv=cv_size, refit=True, return_train_score=True)
         results = clf.fit(data, y=labels)
         
