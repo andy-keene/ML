@@ -25,7 +25,7 @@ This project also uses Principle Component Analysis (PCA) to perform dimensional
 
 A couple of decisions boundaries where the different clustering is due to PCA starting with different input dimensions:
 
-<img src="https://github.com/andy-keene/ML/blob/master/assets/lower-dim-example.png" height="200">  <img src="https://github.com/andy-keene/ML/blob/master/assets/lower-dim-example.png" height="200">
+<img src="https://github.com/andy-keene/ML/blob/master/assets/c%3D1.0%2Cgamma%3D150.0%2Cdegree%3D1%2Ctype%3Drbf%2Cfeature-set%3D0.png" height="200">  <img src="https://github.com/andy-keene/ML/blob/master/assets/lower-dim-example.png" height="200"> <img src="https://github.com/andy-keene/ML/blob/master/assets/c%3D0.1%2Cgamma%3D1e-06%2Cdegree%3D1%2Ctype%3Dlinear%2Cfeature-set%3D0.png" height="200">
 
 
 Final results:
