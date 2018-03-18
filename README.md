@@ -17,3 +17,19 @@ The `./mlp` project uses a Multi-Layer Perceptron (MLP) to classify the MNIST da
 
 ### Naive Bayes Classifier
 The `./naive-bayes` project uses a Naive Bayes Classifier to identify whether or not an email is spam. See  ((spambase dataset)[https://archive.ics.uci.edu/ml/datasets/spambase]) for an explanation and breakdown of the email features. The gaussian naive bayes function `N(x; u, s)` is used to approximate the posterior `P(x | Class)` for feature `x` of the email; however, as one would suspect, the accuracy of the classification is non-optimal and peaks at about 80%. The results vary as the distribution of the data between the training and test set are randomized.
+
+### Kernelized Support Vector Machines (SVMs)
+The `./kernel-svm` project uses kernel support vector machines to predict whether a passenger survived the sinking of the Titanic. 
+This project is more about the process of creating a model and so employs the standard machine learning model selection pipeline: preprocess the data; split data into training/validation/testing sets; select hyper params; validate; tune hyper params; and select/compare top models.
+This project also uses Principle Component Analysis (PCA) to perform dimensionality reduction on the ~11 available features to access the most relevant features and to plot the decision boundaries for various kernels in 2-space.
+
+A couple of decisions boundaries where the different clustering is due to PCA starting with different input dimensions:
+
+<img src="https://github.com/andy-keene/ML/blob/master/assets/lower-dim-example.png" height="200">  <img src="https://github.com/andy-keene/ML/blob/master/assets/lower-dim-example.png" height="200">
+
+
+Final results:
+
+<img src="https://github.com/andy-keene/ML/blob/master/assets/svm-scores.png" height="200">
+
+
